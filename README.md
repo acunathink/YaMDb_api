@@ -21,44 +21,43 @@
 
 ## Как запустить проект:
 
-Выполнить последовательно в командной строке:
+* Выполнить последовательно в командной строке:
+  - Клонировать репозиторий:
+  ```
+  git clone https://github.com/acunathink/api_yamdb.git && cd api_api_yamdb
+  ```
 
-* Клонировать репозиторий:
-```
-git clone https://github.com/acunathink/api_yamdb.git && cd api_api_yamdb
-```
+  - Cоздать виртуальное окружение:
+    * <sub>linux/macos:</sub>
+    ```
+    python3 -m venv venv
+    ```
+    * <sub>windows:</sub>
+    ```
+    python -m venv venv
+    ```
 
-* Cоздать виртуальное окружение:
-- linux/macos:
-```
-python3 -m venv venv
-```
-- windows:
-```
-python -m venv venv
-```
+  - Aктивировать виртуальное окружение:
+  ```
+  source venv/scripts/activate
+  ```
 
-* Aктивировать виртуальное окружение:
-```
-source venv/scripts/activate
-```
+  - Установить зависимости из файла requirements.txt:
+  ```
+  pip install -r requirements.txt
+  ```
 
-Установить зависимости из файла requirements.txt:
-```
-pip install -r requirements.txt
-```
+  - Выполнить миграции и запустить проект:
+    - <sub>linux/macos:</sub>
+    ```
+    cd api_yamdb && python3 manage.py migrate && python3 manage.py runserver
+    ```
 
-* Выполнить миграции и запустить проект:
-- linux/macos:
-```
-cd api_yamdb && python3 manage.py migrate && python3 manage.py runserver
-```
-
-- windows:
-```
-cd api_yamdb && python manage.py migrate && python manage.py runserver
-```
+    - <sub>windows:</sub>
+    ```
+    cd api_yamdb && python manage.py migrate && python manage.py runserver
+    ```
 
 
 ## Документация
-* После запуска проекта документация доступна по адресу `http://127.0.0.1:8000/redoc/`
+* После запуска проекта документация доступна по адресу [http://127.0.0.1:8000/redoc/](http://127.0.0.1:8000/redoc/)
