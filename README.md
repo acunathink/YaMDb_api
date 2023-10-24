@@ -23,9 +23,9 @@
 
 * Выполнить последовательно в командной строке:
   - Клонировать репозиторий:
-  ```
-  git clone https://github.com/acunathink/api_yamdb.git && cd api_api_yamdb
-  ```
+    ```
+    git clone https://github.com/acunathink/api_yamdb.git && cd api_yamdb
+    ```
 
   - Cоздать виртуальное окружение:
     * <sub>linux/macos:</sub>
@@ -38,22 +38,27 @@
     ```
 
   - Aктивировать виртуальное окружение:
-  ```
-  source venv/scripts/activate
-  ```
+    * <sub>linux/macos:</sub>
+    ```
+    source venv/bin/activate
+    ```
+    * <sub>windows:</sub>
+    ```
+    source venv/scripts/activate
+    ```
 
   - Установить зависимости из файла requirements.txt:
-  ```
-  pip install -r requirements.txt
-  ```
+    ```
+    pip install -r requirements.txt
+    ```
 
   - Выполнить миграции и запустить проект:
-    - <sub>linux/macos:</sub>
+    * <sub>linux/macos:</sub>
     ```
     cd api_yamdb && python3 manage.py migrate && python3 manage.py runserver
     ```
 
-    - <sub>windows:</sub>
+    * <sub>windows:</sub>
     ```
     cd api_yamdb && python manage.py migrate && python manage.py runserver
     ```
