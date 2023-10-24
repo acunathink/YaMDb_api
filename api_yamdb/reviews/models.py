@@ -86,6 +86,10 @@ class Review(models.Model):
         auto_now_add=True,
         verbose_name='Дата создания'
     )
+    title = models.OneToOneField(
+        Title, on_delete=models.CASCADE,
+        related_name='reviews'
+    )
 
     class Meta:
         verbose_name = 'Отзыв'
@@ -104,6 +108,14 @@ class Comment(models.Model):
     pub_date = models.DateTimeField(
         auto_now_add=True,
         verbose_name='Дата создания'
+    )
+    title = models.ForeignKey(
+        Title, on_delete=models.CASCADE,
+        related_name='comments'
+    )
+    review = models.ForeignKey(
+        Review, on_delete=models.CASCADE,
+        related_name='comments'
     )
 
     class Meta:
