@@ -1,59 +1,90 @@
-from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.db import IntegrityError
+from django.shortcuts import get_object_or_404
+from rest_framework import status, permissions, viewsets
+from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.core.mail import send_mail
+from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import User
-from .serializers import RegistrationSerializer
-import secrets
+from .serializers import (
+    RegistrationSerializer, TokenSerializer, UserSerializer)
 
 
 class RegistrationView(APIView):
-    def post(self, request):
+    """Регистрация пользователя и отправка confirmation_code на email."""
+    serializer_class = RegistrationSerializer
+    queryset = User.objects.all()
+
+    def post(self, request, *args, **kwargs):
         serializer = RegistrationSerializer(data=request.data)
-        # проверка корректности данных
-        if serializer.is_valid():
-            username = serializer.validated_data['username']
-            email = serializer.validated_data['email']
-            # password = serializer.validated_data['password']
-            code = secrets.token_hex(4).upper()
-
-            # Создание пользователя
-            user = User.objects.create_user(username=username, email=email)
-
-            send_mail(
-                subject='Another Beatles member',
-                message=f'Вы сделали запрос на регистрацию на портале YaMDb.\n'
-                        f'Ваш логин: {username}'
-                        f'Для получения токена используйте код {code} и логин',
-                from_email='robot@yamdb.pro',
-                recipient_list=[email],
-                fail_silently=True,
+        serializer.is_valid(raise_exception=True)
+        try:
+            user, created = User.objects.get_or_create(
+                **serializer.validated_data)
+        except IntegrityError:
+            return Response(
+                'username или email уже заняты',
+                status=status.HTTP_400_BAD_REQUEST
             )
-            return Response({'message': f'Код потверждения был отправлен на указанный email.'})
-        return Response(serializer.errors, status=400)
+        confirmation_code = default_token_generator.make_token(user)
+        user.confirmation_code = confirmation_code
+        user.save()
+
+        send_mail(
+            subject='Код подтверждения для получения токена',
+            message=f'Вы сделали запрос на регистрацию на портале YaMDb.\n\n'
+                    f'Ваш логин: {user.username} \n'
+                    f'Ваш код подтверждения: {confirmation_code}',
+            from_email='robot@yamdb.pro',
+            recipient_list=[user.email],
+            fail_silently=True,
+        )
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class TokenView(APIView):
+    """Получение токена по username и confirmation_code."""
+    permission_classes = (permissions.AllowAny,)
+
     def post(self, request):
-        username = request.data.get('username')
-        code = request.data.get('last_name')
+        serializer = TokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        username = serializer.data['username']
+        user = get_object_or_404(User, username=username)
+        confirmation_code = serializer.data['confirmation_code']
+        if not default_token_generator.check_token(user, confirmation_code):
+            return Response(
+                'Указан не корректный "confirmation_code"',
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        token = AccessToken.for_user(user)
+        return Response({'token': str(token)}, status=status.HTTP_200_OK)
 
-        # Проверка кода из запроса и логина пользователя
-        if username and code:
-            try:
-                user = User.objects.get(username=username)
-            except ObjectDoesNotExist:
-                return Response({'error': 'Пользователь не найден'}, status=400)
 
-            # Проверка соответствия кода из запроса и кода пользователя
-            if code == user.last_name:
-                refresh = RefreshToken.for_user(user)
-                token = {
-                    'refresh': str(refresh),
-                    'access': str(refresh.access_token),
-                }
-                return Response(token)
+class UsersViewSet(viewsets.ModelViewSet):
+    """Работа с полями Пользователей."""
+    serializer_class = UserSerializer
+    queryset = User.objects.all()
+    lookup_field = 'username'
+    permission_classes = (permissions.IsAuthenticated,)
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
-        return Response({'error': 'Неверные данные для получения токена'}, status=400)
+    @action(methods=['GET', 'PATCH'], url_path='me', detail=False,
+            permission_classes=(permissions.IsAuthenticated,))
+    def get_about_me(self, request):
+        serializer = self.get_serializer(
+            request.user,
+            data=request.data,
+            partial=True
+        )
+        if serializer.is_valid():
+            if self.request.method == 'PATCH':
+                serializer.validated_data.pop('role', None)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(
+            serializer.errors, status=status.HTTP_400_BAD_REQUEST
+        )
