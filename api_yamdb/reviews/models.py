@@ -2,7 +2,6 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
-from .managers import CustomUserManager
 
 ROLE_CHOICES = [
     ('user', 'Пользователь'),
@@ -33,10 +32,6 @@ class User(AbstractUser):
         max_length=100, verbose_name='Роль'
     )
     confirmation_code = models.TextField(verbose_name='Код подтверждения')
-
-    REQUIRED_FIELDS = ['email', ]
-
-    objects = CustomUserManager()
 
     class Meta:
         verbose_name = 'Пользователь'
