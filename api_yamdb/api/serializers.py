@@ -2,7 +2,7 @@ from rest_framework import serializers
 from reviews.models import User
 
 
-class UserRegistrationSerializer(serializers.ModelSerializer):
+class RegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(required=False)
     email = serializers.EmailField(required=True)
 
@@ -11,7 +11,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class JWTTokenSerializer(serializers.ModelSerializer):
+class TokenSerializer(serializers.ModelSerializer):
     password = serializers.CharField(required=False)
     last_name = serializers.CharField(required=True)
 
