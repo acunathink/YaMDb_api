@@ -2,7 +2,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
-from rest_framework import status, permissions, viewsets
+from rest_framework import status, permissions, viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -11,6 +11,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from reviews.models import User
 from .serializers import (
     RegistrationSerializer, TokenSerializer, UserSerializer)
+from .permissions import IsAdminPermission
 
 
 class RegistrationView(APIView):
@@ -67,9 +68,11 @@ class TokenView(APIView):
 class UsersViewSet(viewsets.ModelViewSet):
     """Работа с полями Пользователей."""
     serializer_class = UserSerializer
-    queryset = User.objects.all()
+    queryset = User.objects.order_by('id')
     lookup_field = 'username'
-    permission_classes = (permissions.IsAuthenticated,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('username',)
+    permission_classes = (IsAdminPermission,)
     http_method_names = ['get', 'post', 'patch', 'delete']
 
     @action(methods=['GET', 'PATCH'], url_path='me', detail=False,
