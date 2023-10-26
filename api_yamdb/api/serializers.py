@@ -33,8 +33,15 @@ class RegistrationSerializer(serializers.Serializer):
         return value
 
 
-class TokenSerializer(serializers.ModelSerializer):
+class TokenSerializer(serializers.Serializer):
     """Serializer для работы с Токеном."""
+    username = serializers.RegexField(
+        regex=r'^[\w.@+-]+$',
+        max_length=150,
+        required=True
+    )
+    confirmation_code = serializers.CharField(required=True)
+
     class Meta:
         model = User
         fields = ('username',
