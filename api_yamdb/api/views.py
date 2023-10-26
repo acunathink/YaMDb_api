@@ -7,7 +7,6 @@ from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework.pagination import PageNumberPagination
 
 from reviews.models import User
 from .serializers import (
@@ -73,7 +72,6 @@ class UsersViewSet(viewsets.ModelViewSet):
     lookup_field = 'username'
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
-    pagination_class = PageNumberPagination
     permission_classes = (IsAdminPermission,)
     http_method_names = ['get', 'post', 'patch', 'delete']
 
