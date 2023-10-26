@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
+
 ROLE_CHOICES = [
     ('user', 'Пользователь'),
     ('moderator', 'Модератор'),
@@ -21,13 +22,16 @@ class BaseModel(models.Model):
 
 
 class User(AbstractUser):
+    email = models.EmailField(
+        max_length=254, unique=True,
+        verbose_name='Электронная почта'
+    )
     bio = models.TextField(blank=True, verbose_name='Биография')
     role = models.CharField(
         default='user', choices=ROLE_CHOICES,
         max_length=100, verbose_name='Роль'
     )
-
-    REQUIRED_FIELDS = ['email', ]
+    confirmation_code = models.TextField(verbose_name='Код подтверждения')
 
     class Meta:
         verbose_name = 'Пользователь'
