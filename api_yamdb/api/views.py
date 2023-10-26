@@ -2,11 +2,12 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
-from rest_framework import status, permissions, viewsets
+from rest_framework import status, permissions, viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework.pagination import PageNumberPagination
 
 from reviews.models import User
 from .serializers import (
@@ -69,6 +70,9 @@ class UsersViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     queryset = User.objects.all()
     lookup_field = 'username'
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('username',)
+    pagination_class = PageNumberPagination
     permission_classes = (permissions.IsAuthenticated,)
     http_method_names = ['get', 'post', 'patch', 'delete']
 
