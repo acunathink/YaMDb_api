@@ -12,6 +12,7 @@ from rest_framework.pagination import PageNumberPagination
 from reviews.models import User
 from .serializers import (
     RegistrationSerializer, TokenSerializer, UserSerializer)
+from .permissions import IsAdminPermission
 
 
 class RegistrationView(APIView):
@@ -73,7 +74,7 @@ class UsersViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
     pagination_class = PageNumberPagination
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (IsAdminPermission,)
     http_method_names = ['get', 'post', 'patch', 'delete']
 
     @action(methods=['GET', 'PATCH'], url_path='me', detail=False,
