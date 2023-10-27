@@ -12,7 +12,7 @@ ROLE_CHOICES = [
 
 class BaseModel(models.Model):
     name = models.CharField(max_length=256, verbose_name='Название')
-    slug = models.SlugField(verbose_name='Слаг')
+    slug = models.SlugField(unique=True, verbose_name='Слаг')
 
     class Meta:
         abstract = True
@@ -74,7 +74,7 @@ class Title(models.Model):
 
 
 class Review(models.Model):
-    text = models.TextField(verbose_name='Текст комментария')
+    text = models.TextField(verbose_name='Текст отзыва')
     author = models.ForeignKey(
         User, on_delete=models.CASCADE,
         related_name='reviews'
