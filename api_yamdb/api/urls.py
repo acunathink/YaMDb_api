@@ -1,7 +1,10 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-from .views import RegistrationView, TokenView, UsersViewSet, CategoriesViewSet, GenresViewSet, TitlesViewSet
+from .views import (
+    CategoriesViewSet, GenresViewSet, RegistrationView, ReviewsViewSet,
+    TitlesViewSet, TokenView, UsersViewSet,
+)
 
 
 v1_router = DefaultRouter()
@@ -10,6 +13,7 @@ v1_router.register('users', UsersViewSet, basename='users')
 v1_router.register('categories', CategoriesViewSet)
 v1_router.register('genres', GenresViewSet)
 v1_router.register('titles', TitlesViewSet)
+v1_router.register('reviews', ReviewsViewSet)
 
 urlpatterns = [
     path('v1/', include(v1_router.urls)),
