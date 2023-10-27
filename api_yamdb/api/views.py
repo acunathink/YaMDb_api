@@ -22,10 +22,10 @@ class CategoriesGenresBaseMixin(
     mixins.ListModelMixin, mixins.CreateModelMixin,
     mixins.DestroyModelMixin, viewsets.GenericViewSet
 ):
-    """
-    Миксин для Жанров и Категорий, разрешает получение списка,
-    создание объекта, удаление объекта.
-    """
+    """Миксин для Жанров и Категорий.
+
+    Разрешает получение списка, создание объекта,
+    удаление объекта."""
     filter_backends = (filters.SearchFilter,)
     lookup_field = 'slug'
     search_fields = ('name',)
