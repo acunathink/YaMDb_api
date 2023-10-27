@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'reviews.apps.ReviewsConfig',
     'rest_framework',
     'rest_framework_simplejwt',
+    'django_filters'
 ]
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'

@@ -12,7 +12,7 @@ ROLE_CHOICES = [
 
 class BaseModel(models.Model):
     name = models.CharField(max_length=256, verbose_name='Название')
-    slug = models.SlugField(verbose_name='Слаг')
+    slug = models.SlugField(unique=True, verbose_name='Слаг')
 
     class Meta:
         abstract = True
