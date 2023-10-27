@@ -76,6 +76,8 @@ class ReviewSerializer(serializers.ModelSerializer):
             'score',
             'pub_date',
         )
+
+
 class CategorySerializer(serializers.ModelSerializer):
     """Serializer для работы с Категориями."""
 
