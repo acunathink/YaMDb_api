@@ -1,5 +1,7 @@
+from turtle import mode
+from attr import fields
 from rest_framework import serializers
-from reviews.models import User
+from reviews.models import User, Review
 
 
 class RegistrationSerializer(serializers.Serializer):
@@ -60,4 +62,17 @@ class UserSerializer(serializers.ModelSerializer):
             'last_name',
             'bio',
             'role',
+        )
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    """Serializer для работы с Отзывами."""
+    class Meta:
+        model = Review
+        fields = (
+            'id',
+            'text',
+            'author',
+            'score',
+            'pub_date',
         )
