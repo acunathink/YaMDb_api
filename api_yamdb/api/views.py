@@ -16,6 +16,7 @@ from .serializers import (
     RegistrationSerializer, TokenSerializer, UserSerializer,
     CategorySerializer, GenreSerializer, TitlesSerializer
 )
+from .permissions import IsAdminPermission
 
 
 class CategoriesGenresBaseMixin(
