@@ -85,9 +85,11 @@ class TokenView(APIView):
 class UsersViewSet(viewsets.ModelViewSet):
     """Работа с полями Пользователей."""
     serializer_class = UserSerializer
-    queryset = User.objects.all()
+    queryset = User.objects.order_by('id')
     lookup_field = 'username'
-    permission_classes = (permissions.IsAuthenticated,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('username',)
+    permission_classes = (IsAdminPermission,)
     http_method_names = ['get', 'post', 'patch', 'delete']
 
     @action(methods=['GET', 'PATCH'], url_path='me', detail=False,
