@@ -11,11 +11,12 @@ from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework import mixins
 from rest_framework import filters
 
-from reviews.models import User, Category, Genre, Title
+from reviews.models import User, Category, Genre, Title, Review
 from .serializers import (
-    RegistrationSerializer, TokenSerializer, UserSerializer,
-    CategorySerializer, GenreSerializer, TitlesSerializer
+    CategorySerializer, GenreSerializer, RegistrationSerializer,
+    ReviewSerializer, TitlesSerializer, TokenSerializer, UserSerializer
 )
+from .permissions import IsAdminPermission
 
 
 class CategoriesGenresBaseMixin(
@@ -137,3 +138,9 @@ class TitlesViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return Response(serializer.data)
+
+
+class ReviewsViewSet(viewsets.ModelViewSet):
+    """Работа с отзывами."""
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
