@@ -145,8 +145,15 @@ class ReviewsViewSet(viewsets.ModelViewSet):
     """Работа с отзывами."""
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
+    permission_classes = (permissions.IsAuthenticated,)
 
     def perform_create(self, serializer):
         title_id = self.kwargs.get('title_id')
         title = get_object_or_404(Title, pk=title_id)
         serializer.save(author=self.request.user, title=title)
+
+    def get_queryset(self):
+        title_id = self.kwargs.get('title_id')
+        title = get_object_or_404(Title, pk=title_id)
+        return title.reviews.all().order_by('id')
+    
