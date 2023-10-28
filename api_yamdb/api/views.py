@@ -53,7 +53,7 @@ class RegistrationView(APIView):
         user.save()
 
         send_mail(
-            subject='Код подтверждения для получения токена',
+            subject='Confirmation code for token',
             message=f'Вы сделали запрос на регистрацию на портале YaMDb.\n\n'
                     f'Ваш логин: {user.username} \n'
                     f'Ваш код подтверждения: {confirmation_code}',
