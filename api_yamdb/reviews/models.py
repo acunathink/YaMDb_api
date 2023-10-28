@@ -2,6 +2,8 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
+from .managers import TitleManager
+
 
 ROLE_CHOICES = [
     ('user', 'Пользователь'),
@@ -64,6 +66,7 @@ class Title(models.Model):
         Category, on_delete=models.SET_NULL,
         null=True, related_name='titles'
     )
+    objects = TitleManager()
 
     class Meta:
         verbose_name = 'Произведение'
@@ -90,8 +93,9 @@ class Review(models.Model):
         auto_now_add=True,
         verbose_name='Дата создания'
     )
-    title = models.OneToOneField(
-        Title, on_delete=models.CASCADE,
+    title = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
         related_name='reviews'
     )
 

@@ -123,7 +123,7 @@ class GenresViewSet(CategoriesGenresBaseMixin):
 
 class TitlesViewSet(viewsets.ModelViewSet):
     """Работа с Произведениями."""
-    queryset = Title.objects.all()
+    queryset = Title.objects.all().order_by('id')
     serializer_class = TitlesSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('genre__slug',)
