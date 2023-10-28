@@ -1,16 +1,14 @@
-from turtle import title
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status, permissions, viewsets
+from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework import mixins
-from rest_framework import filters
 
 from reviews.models import User, Category, Genre, Title, Review
 from .serializers import (
@@ -153,10 +151,14 @@ class ReviewsViewSet(viewsets.ModelViewSet):
         return title
 
     def perform_create(self, serializer):
-        serializer.save(
-            author=self.request.user,
-            title=self.get_title()
-        )
+        try:
+            serializer.save(
+                author=self.request.user, title=self.get_title()
+            )
+        except IntegrityError:
+            raise ValidationError(
+                'Cоздать другой отзыв на одно и то же произведение нельзя.'
+            )
 
     def get_queryset(self):
         return self.get_title().reviews.all().order_by('id')

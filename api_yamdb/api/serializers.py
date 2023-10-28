@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
+# from rest_framework.validators import UniqueTogetherValidator
 
 from reviews.models import User, Category, Genre, Title, Review
 
@@ -67,20 +68,15 @@ class UserSerializer(serializers.ModelSerializer):
 
 class ReviewSerializer(serializers.ModelSerializer):
     """Serializer для работы с Отзывами."""
-    author = serializers.PrimaryKeyRelatedField(
+    author = serializers.CharField(
+        source='author.username',
         read_only=True,
         default=serializers.CurrentUserDefault()
     )
 
     class Meta:
         model = Review
-        fields = (
-            'id',
-            'text',
-            'author',
-            'score',
-            'pub_date',
-        )
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
 
 
 class CategorySerializer(serializers.ModelSerializer):
