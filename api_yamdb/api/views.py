@@ -1,3 +1,4 @@
+from turtle import title
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db import IntegrityError
@@ -144,3 +145,8 @@ class ReviewsViewSet(viewsets.ModelViewSet):
     """Работа с отзывами."""
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
+
+    def perform_create(self, serializer):
+        title_id = self.kwargs.get('title_id')
+        title = get_object_or_404(Title, pk=title_id)
+        serializer.save(author=self.request.user, title=title)
