@@ -15,7 +15,7 @@ from .serializers import (
     CategorySerializer, GenreSerializer, RegistrationSerializer,
     ReviewSerializer, TitlesSerializer, TokenSerializer, UserSerializer
 )
-from .permissions import IsAdminPermission
+from .permissions import IsAdminPermission, AuthorOrReadOnly
 
 
 class CategoriesGenresBaseMixin(
@@ -143,7 +143,7 @@ class ReviewsViewSet(viewsets.ModelViewSet):
     """Работа с отзывами."""
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (AuthorOrReadOnly,)
 
     def get_title(self):
         title_id = self.kwargs.get('title_id')
