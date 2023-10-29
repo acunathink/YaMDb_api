@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 
 from .views import (
     CategoriesViewSet, GenresViewSet, RegistrationView, ReviewsViewSet,
-    TitlesViewSet, TokenView, UsersViewSet,
+    TitlesViewSet, TokenView, UsersViewSet, CommentViewSet
 )
 
 
@@ -14,6 +14,10 @@ v1_router.register('categories', CategoriesViewSet)
 v1_router.register('genres', GenresViewSet)
 v1_router.register('titles', TitlesViewSet)
 v1_router.register(r'titles/(?P<title_id>[\d]+)/reviews', ReviewsViewSet)
+v1_router.register(
+    r'titles/(?P<title_id>[\d]+)/reviews/(?P<review_id>[\w]+)/comments',
+    CommentViewSet
+)
 
 urlpatterns = [
     path('v1/', include(v1_router.urls)),
