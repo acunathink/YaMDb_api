@@ -17,6 +17,7 @@ from .serializers import (
     RegistrationSerializer, TitlesSerializer, TokenSerializer, UserSerializer
 )
 from .permissions import IsAdminPermission
+from reviews.filters import TitleFilter
 
 
 class CategoriesGenresBaseMixin(
@@ -125,7 +126,7 @@ class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all().order_by('id')
     serializer_class = TitlesSerializer
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('genre__slug',)
+    filterset_class = TitleFilter
 
     def update(self, request, *args, **kwargs):
         if self.action == 'update':
