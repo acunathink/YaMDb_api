@@ -63,8 +63,5 @@
     cd api_yamdb && python manage.py migrate && python manage.py runserver
     ```
 
-  - Создать в директории с файлом manage.py текстовый файл .env,
-    куда необходимо поместить значние переменной из SECRET_KEY из settings.py.
-
 ## Документация
 * После запуска проекта документация доступна по адресу [http://127.0.0.1:8000/redoc/](http://127.0.0.1:8000/redoc/)
