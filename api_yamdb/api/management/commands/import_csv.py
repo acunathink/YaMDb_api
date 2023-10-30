@@ -31,8 +31,8 @@ class Command(BaseCommand):
         with open('static/data/genre_title.csv', encoding='utf-8') as gt:
             reader = csv.DictReader(gt)
             for row in reader:
-                title = Title.objects.get(id=int(row['title_id']))
-                genre = Genre.objects.get(id=int(row['genre_id']))
+                title = Title.objects.get(id=row['title_id'])
+                genre = Genre.objects.get(id=row['genre_id'])
                 title.genre.add(genre)
 
         self.stdout.write(self.style.SUCCESS('Все данные импортированы'))
