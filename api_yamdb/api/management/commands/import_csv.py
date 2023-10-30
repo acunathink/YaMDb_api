@@ -7,7 +7,7 @@ CSV = {
     User: 'users.csv',
     Category: 'category.csv',
     Title: 'titles.csv',
-    Genre: 'category.csv',
+    Genre: 'genre.csv',
     Review: 'review.csv',
     Comment: 'comments.csv'
 }
