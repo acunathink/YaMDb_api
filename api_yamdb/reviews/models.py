@@ -13,8 +13,14 @@ ROLE_CHOICES = [
 
 
 class BaseModel(models.Model):
-    name = models.CharField(max_length=256, verbose_name='Название')
-    slug = models.SlugField(unique=True, verbose_name='Слаг')
+    name = models.CharField(
+        max_length=256,
+        verbose_name='Название'
+    )
+    slug = models.SlugField(
+        unique=True,
+        verbose_name='Слаг'
+    )
 
     class Meta:
         abstract = True
@@ -25,15 +31,20 @@ class BaseModel(models.Model):
 
 class User(AbstractUser):
     email = models.EmailField(
-        max_length=254, unique=True,
+        max_length=254,
+        unique=True,
         verbose_name='Электронная почта'
     )
     bio = models.TextField(blank=True, verbose_name='Биография')
     role = models.CharField(
-        default='user', choices=ROLE_CHOICES,
-        max_length=100, verbose_name='Роль'
+        default='user',
+        choices=ROLE_CHOICES,
+        max_length=100,
+        verbose_name='Роль'
     )
-    confirmation_code = models.TextField(verbose_name='Код подтверждения')
+    confirmation_code = models.TextField(
+        verbose_name='Код подтверждения'
+    )
 
     class Meta:
         verbose_name = 'Пользователь'
@@ -63,8 +74,10 @@ class Title(models.Model):
     description = models.TextField(blank=True, verbose_name='Описание')
     genre = models.ManyToManyField(Genre, related_name='titles')
     category = models.ForeignKey(
-        Category, on_delete=models.SET_NULL,
-        null=True, related_name='titles'
+        Category,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='titles'
     )
     objects = TitleManager()
 
@@ -79,7 +92,8 @@ class Title(models.Model):
 class Review(models.Model):
     text = models.TextField(verbose_name='Текст отзыва')
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE,
+        User,
+        on_delete=models.CASCADE,
         related_name='reviews'
     )
     score = models.PositiveIntegerField(
@@ -116,7 +130,8 @@ class Review(models.Model):
 class Comment(models.Model):
     text = models.TextField(verbose_name='Текст комментария')
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE,
+        User,
+        on_delete=models.CASCADE,
         related_name='comments'
     )
     pub_date = models.DateTimeField(
@@ -124,11 +139,13 @@ class Comment(models.Model):
         verbose_name='Дата создания'
     )
     title = models.ForeignKey(
-        Title, on_delete=models.CASCADE,
+        Title,
+        on_delete=models.CASCADE,
         related_name='comments'
     )
     review = models.ForeignKey(
-        Review, on_delete=models.CASCADE,
+        Review,
+        on_delete=models.CASCADE,
         related_name='comments'
     )
 
