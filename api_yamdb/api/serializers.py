@@ -19,12 +19,14 @@ class RegistrationSerializer(serializers.Serializer):
 
     class Meta:
         model = User
-        fields = ('username',
-                  'email',
-                  'first_name',
-                  'last_name',
-                  'bio',
-                  'role')
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role'
+        )
 
     def validate_username(self, value):
         """Проверка использования допустимого username."""
@@ -46,9 +48,10 @@ class TokenSerializer(serializers.Serializer):
 
     class Meta:
         model = User
-        fields = ('username',
-                  'confirmation_code'
-                  )
+        fields = (
+            'username',
+            'confirmation_code'
+        )
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -75,7 +78,13 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = ('id', 'text', 'author', 'score', 'pub_date')
+        fields = (
+            'id',
+            'text',
+            'author',
+            'score',
+            'pub_date'
+        )
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -83,7 +92,10 @@ class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ('name', 'slug')
+        fields = (
+            'name',
+            'slug'
+        )
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -91,13 +103,17 @@ class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Genre
-        fields = ('name', 'slug')
+        fields = (
+            'name',
+            'slug'
+        )
 
 
 class TitlesSerializer(serializers.ModelSerializer):
     """Serializer для работы с Произведениями."""
     genre = serializers.SlugRelatedField(
-        many=True, slug_field='slug',
+        many=True,
+        slug_field='slug',
         queryset=Genre.objects.all()
     )
     category = serializers.SlugRelatedField(
@@ -125,7 +141,9 @@ class TitlesSerializer(serializers.ModelSerializer):
         data['category'] = CategorySerializer(category).data
 
         genre_slugs = data.get('genre')
-        genres = [get_object_or_404(Genre, slug=slug) for slug in genre_slugs]
+        genres = [
+            get_object_or_404(Genre, slug=slug) for slug in genre_slugs
+        ]
         data['genre'] = GenreSerializer(genres, many=True).data
 
         return data
@@ -133,9 +151,15 @@ class TitlesSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
-        read_only=True, slug_field='username'
+        read_only=True,
+        slug_field='username'
     )
 
     class Meta:
         model = Comment
-        fields = ('id', 'text', 'author', 'pub_date')
+        fields = (
+            'id',
+            'text',
+            'author',
+            'pub_date'
+        )

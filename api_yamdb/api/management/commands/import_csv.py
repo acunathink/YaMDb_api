@@ -14,6 +14,7 @@ CSV = {
 
 
 class Command(BaseCommand):
+    """Импорт csv-файлов."""
     help = 'Command for import csv files'
 
     def handle(self, *args, **options):
@@ -23,10 +24,12 @@ class Command(BaseCommand):
                 if model.objects.exists():
                     self.stdout.write(self.style.WARNING(
                         f'Для модели "{model._meta.verbose_name}" '
-                        f'данные уже добавлены!'))
+                        f'данные уже добавлены!')
+                    )
                     continue
                 model.objects.bulk_create(
-                    model(**data) for data in reader)
+                    model(**data) for data in reader
+                )
 
         with open('static/data/genre_title.csv', encoding='utf-8') as gt:
             reader = csv.DictReader(gt)
