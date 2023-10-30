@@ -1,26 +1,27 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db import IntegrityError
-from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
+
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.filters import TitleFilter
-from reviews.models import User, Category, Genre, Title, Review, Comment
-from .permissions import (
-    IsAdminPermission, AuthorOrModerPermission, IsAdminOrReadOnlyPermission
-)
+from reviews.models import Category, Comment, Genre, Review, Title, User
 
-from .serializers import (
-    CategorySerializer, CommentSerializer, GenreSerializer, ReviewSerializer,
-    RegistrationSerializer, TitlesSerializer, TokenSerializer, UserSerializer
+from .permissions import (
+    AuthorOrModerPermission, IsAdminOrReadOnlyPermission, IsAdminPermission
 )
-from .permissions import IsAdminPermission
+from .serializers import (
+    CategorySerializer, CommentSerializer, GenreSerializer,
+    RegistrationSerializer, ReviewSerializer, TitlesSerializer,
+    TokenSerializer, UserSerializer
+)
 
 
 class CategoriesGenresBaseMixin(
