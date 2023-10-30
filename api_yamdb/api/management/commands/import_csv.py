@@ -7,9 +7,9 @@ CSV = {
     User: 'users.csv',
     Category: 'category.csv',
     Title: 'titles.csv',
-    Genre: 'category.csv',
+    Genre: 'genre.csv',
     Review: 'review.csv',
-    Comment: 'comments.csv'
+    Comment: 'comments.csv',
 }
 
 
@@ -27,4 +27,12 @@ class Command(BaseCommand):
                     continue
                 model.objects.bulk_create(
                     model(**data) for data in reader)
+
+        with open('static/data/genre_title.csv', encoding='utf-8') as gt:
+            reader = csv.DictReader(gt)
+            for row in reader:
+                title = Title.objects.get(id=int(row['title_id']))
+                genre = Genre.objects.get(id=int(row['genre_id']))
+                title.genre.add(genre)
+
         self.stdout.write(self.style.SUCCESS('Все данные импортированы'))
