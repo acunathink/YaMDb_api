@@ -11,7 +11,8 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import User, Category, Genre, Title, Review, Comment
-from .permissions import IsAdminPermission, AuthorOrReadOnly
+from .permissions import (
+    IsAdminPermission, AuthorOrReadOnlyPermission, IsAdminOrReadOnlyPermission)
 from .serializers import (
     CategorySerializer, CommentSerializer, GenreSerializer, ReviewSerializer,
     RegistrationSerializer, TitlesSerializer, TokenSerializer, UserSerializer
@@ -38,7 +39,7 @@ class RegistrationView(APIView):
     serializer_class = RegistrationSerializer
     queryset = User.objects.all()
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         serializer = RegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
@@ -111,14 +112,16 @@ class UsersViewSet(viewsets.ModelViewSet):
 
 class CategoriesViewSet(CategoriesGenresBaseMixin):
     """Работа с Категориями."""
-    queryset = Category.objects.all()
+    queryset = Category.objects.order_by('id')
     serializer_class = CategorySerializer
+    permission_classes = (IsAdminOrReadOnlyPermission,)
 
 
 class GenresViewSet(CategoriesGenresBaseMixin):
     """Работа с Жанрами."""
-    queryset = Genre.objects.all()
+    queryset = Genre.objects.order_by('id')
     serializer_class = GenreSerializer
+    permission_classes = (IsAdminOrReadOnlyPermission,)
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
@@ -127,6 +130,7 @@ class TitlesViewSet(viewsets.ModelViewSet):
     serializer_class = TitlesSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
+    permission_classes = (IsAdminOrReadOnlyPermission,)
 
     def update(self, request, *args, **kwargs):
         if self.action == 'update':
@@ -142,7 +146,7 @@ class TitlesViewSet(viewsets.ModelViewSet):
 
 
 class WithTitleViewSet(viewsets.ModelViewSet):
-    permission_classes = (AuthorOrReadOnly,)
+    permission_classes = (AuthorOrReadOnlyPermission,)
 
     def get_title(self):
         title_id = self.kwargs.get('title_id')
