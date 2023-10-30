@@ -169,6 +169,7 @@ class TitlesViewSet(viewsets.ModelViewSet):
 
 class WithTitleViewSet(viewsets.ModelViewSet):
     permission_classes = (AuthorOrModerPermission,)
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_title(self):
         title_id = self.kwargs.get('title_id')
