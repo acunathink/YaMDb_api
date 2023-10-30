@@ -12,7 +12,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import User, Category, Genre, Title, Review, Comment
 from .permissions import (
-    IsAdminPermission, AuthorOrReadOnlyPermission, IsAdminOrReadOnlyPermission)
+    IsAdminPermission, AuthorOrModerPermission, IsAdminOrReadOnlyPermission)
 from .serializers import (
     CategorySerializer, CommentSerializer, GenreSerializer, ReviewSerializer,
     RegistrationSerializer, TitlesSerializer, TokenSerializer, UserSerializer
@@ -146,7 +146,7 @@ class TitlesViewSet(viewsets.ModelViewSet):
 
 
 class WithTitleViewSet(viewsets.ModelViewSet):
-    permission_classes = (AuthorOrReadOnlyPermission,)
+    permission_classes = (AuthorOrModerPermission,)
 
     def get_title(self):
         title_id = self.kwargs.get('title_id')
@@ -174,7 +174,7 @@ class ReviewsViewSet(WithTitleViewSet):
 
 
 class CommentViewSet(WithTitleViewSet):
-    queryset = Comment.objects.all()
+    queryset = Comment.objects.order_by('id')
     serializer_class = CommentSerializer
 
     def get_review(self):
@@ -183,7 +183,7 @@ class CommentViewSet(WithTitleViewSet):
         return review
 
     def get_queryset(self):
-        return self.get_review().comments.all()
+        return self.get_review().comments.order_by('id')
 
     def perform_create(self, serializer):
         serializer.save(
