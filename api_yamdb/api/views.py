@@ -1,29 +1,32 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db import IntegrityError
-from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from django.shortcuts import get_object_or_404
 from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework.views import APIView
 
+from reviews.filters import TitleFilter
 from reviews.models import User, Category, Genre, Title, Review, Comment
 from .permissions import (
-    IsAdminPermission, AuthorOrReadOnlyPermission, IsAdminOrReadOnlyPermission)
+    AuthorOrReadOnlyPermission, IsAdminOrReadOnlyPermission
+)
 from .serializers import (
     CategorySerializer, CommentSerializer, GenreSerializer, ReviewSerializer,
     RegistrationSerializer, TitlesSerializer, TokenSerializer, UserSerializer
 )
 from .permissions import IsAdminPermission
-from reviews.filters import TitleFilter
 
 
 class CategoriesGenresBaseMixin(
-    mixins.ListModelMixin, mixins.CreateModelMixin,
-    mixins.DestroyModelMixin, viewsets.GenericViewSet
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet
 ):
     """Миксин для Жанров и Категорий.
 
@@ -44,7 +47,8 @@ class RegistrationView(APIView):
         serializer.is_valid(raise_exception=True)
         try:
             user, created = User.objects.get_or_create(
-                **serializer.validated_data)
+                **serializer.validated_data
+            )
         except IntegrityError:
             return Response(
                 'username или email уже заняты',
@@ -63,7 +67,10 @@ class RegistrationView(APIView):
             recipient_list=[user.email],
             fail_silently=True,
         )
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )
 
 
 class TokenView(APIView):
@@ -82,7 +89,10 @@ class TokenView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         token = AccessToken.for_user(user)
-        return Response({'token': str(token)}, status=status.HTTP_200_OK)
+        return Response(
+            {'token': str(token)},
+            status=status.HTTP_200_OK
+        )
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -95,8 +105,12 @@ class UsersViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminPermission,)
     http_method_names = ['get', 'post', 'patch', 'delete']
 
-    @action(methods=['GET', 'PATCH'], url_path='me', detail=False,
-            permission_classes=(permissions.IsAuthenticated,))
+    @action(
+        methods=['GET', 'PATCH'],
+        url_path='me',
+        detail=False,
+        permission_classes=(permissions.IsAuthenticated,)
+    )
     def get_about_me(self, request):
         serializer = UserSerializer(
             request.user,
@@ -107,7 +121,10 @@ class UsersViewSet(viewsets.ModelViewSet):
         if self.request.method == 'PATCH':
             serializer.validated_data.pop('role', None)
             serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )
 
 
 class CategoriesViewSet(CategoriesGenresBaseMixin):
@@ -134,10 +151,13 @@ class TitlesViewSet(viewsets.ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         if self.action == 'update':
-            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+            return Response(
+                status=status.HTTP_405_METHOD_NOT_ALLOWED
+            )
         instance = self.get_object()
         serializer = self.get_serializer(
-            instance, data=request.data,
+            instance,
+            data=request.data,
             partial=True
         )
         serializer.is_valid(raise_exception=True)
@@ -162,7 +182,8 @@ class ReviewsViewSet(WithTitleViewSet):
     def perform_create(self, serializer):
         try:
             serializer.save(
-                author=self.request.user, title=self.get_title()
+                author=self.request.user,
+                title=self.get_title()
             )
         except IntegrityError:
             raise ValidationError(
