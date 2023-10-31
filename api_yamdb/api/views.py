@@ -54,18 +54,25 @@ class RegistrationView(APIView):
         existing_user = User.objects.filter(username=username).first()
 
         if existing_user and existing_user.email != email:
-            return Response(f'Указан не верный email для {existing_user}!',
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                f'Указан не верный email для {existing_user}!',
+                status=status.HTTP_400_BAD_REQUEST
+            )
         if User.objects.filter(username=username).exists():
-            return Response(request.data,
-                            status=status.HTTP_200_OK)
+            return Response(
+                request.data,
+                status=status.HTTP_200_OK
+            )
         if existing_user is None and User.objects.filter(email=email).exists():
-            return Response(f'Пользователь с почтой {email}'
-                            f'уже зарегистрирован!',
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                f'Пользователь с почтой {email} уже зарегистрирован!',
+                status=status.HTTP_400_BAD_REQUEST
+            )
         if User.objects.filter(email=email).exists():
-            return Response(request.data,
-                            status=status.HTTP_200_OK)
+            return Response(
+                request.data,
+                status=status.HTTP_200_OK
+            )
         user = User.objects.create_user(username, email)
         confirmation_code = default_token_generator.make_token(user)
         user.confirmation_code = confirmation_code
