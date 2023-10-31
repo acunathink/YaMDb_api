@@ -3,6 +3,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from .managers import TitleManager
+from .validators import validate_year
 
 ROLE_CHOICES = [
     ('user', 'Пользователь'),
@@ -10,10 +11,14 @@ ROLE_CHOICES = [
     ('admin', 'Админ')
 ]
 
+BASE_LENGTH = 256
+BASE_EMAIL_LENGTH = 254
+DEFAULT_STR_LENGTH = 25
+
 
 class BaseModel(models.Model):
     name = models.CharField(
-        max_length=256,
+        max_length=BASE_LENGTH,
         verbose_name='Название'
     )
     slug = models.SlugField(
@@ -23,6 +28,7 @@ class BaseModel(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ['id']
 
     def __str__(self):
         return self.name
@@ -30,7 +36,7 @@ class BaseModel(models.Model):
 
 class User(AbstractUser):
     email = models.EmailField(
-        max_length=254,
+        max_length=BASE_EMAIL_LENGTH,
         unique=True,
         verbose_name='Электронная почта'
     )
@@ -46,6 +52,7 @@ class User(AbstractUser):
     )
 
     class Meta:
+        ordering = ['id']
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
 
@@ -68,8 +75,15 @@ class Genre(BaseModel):
 
 
 class Title(models.Model):
-    name = models.CharField(max_length=256, verbose_name='Название')
-    year = models.PositiveIntegerField(verbose_name='Год выпуска')
+    name = models.CharField(
+        max_length=BASE_LENGTH,
+        verbose_name='Название'
+    )
+    year = models.PositiveIntegerField(
+        validators=[validate_year],
+        db_index=True,
+        verbose_name='Год выпуска'
+    )
     description = models.TextField(blank=True, verbose_name='Описание')
     genre = models.ManyToManyField(Genre, related_name='titles')
     category = models.ForeignKey(
@@ -81,6 +95,7 @@ class Title(models.Model):
     objects = TitleManager()
 
     class Meta:
+        ordering = ['id']
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
 
@@ -113,6 +128,7 @@ class Review(models.Model):
     )
 
     class Meta:
+        ordering = ['id']
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
         constraints = [
@@ -123,7 +139,7 @@ class Review(models.Model):
         ]
 
     def __str__(self):
-        return self.text[:25]
+        return self.text[:DEFAULT_STR_LENGTH]
 
 
 class Comment(models.Model):
@@ -149,8 +165,9 @@ class Comment(models.Model):
     )
 
     class Meta:
+        ordering = ['id']
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
 
     def __str__(self):
-        return self.text[:25]
+        return self.text[:DEFAULT_STR_LENGTH]
