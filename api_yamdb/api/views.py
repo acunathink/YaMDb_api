@@ -48,15 +48,25 @@ class RegistrationView(APIView):
     def post(self, request):
         serializer = RegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        try:
-            user, created = User.objects.get_or_create(
-                **serializer.validated_data
-            )
-        except IntegrityError:
-            return Response(
-                'username или email уже заняты',
-                status=status.HTTP_400_BAD_REQUEST
-            )
+
+        username = serializer.validated_data.get('username')
+        email = serializer.validated_data.get('email')
+        existing_user = User.objects.filter(username=username).first()
+
+        if existing_user and existing_user.email != email:
+            return Response(f'Указан не верный email для {existing_user}!',
+                            status=status.HTTP_400_BAD_REQUEST)
+        if User.objects.filter(username=username).exists():
+            return Response(request.data,
+                            status=status.HTTP_200_OK)
+        if existing_user is None and User.objects.filter(email=email).exists():
+            return Response(f'Пользователь с почтой {email}'
+                            f'уже зарегистрирован!',
+                            status=status.HTTP_400_BAD_REQUEST)
+        if User.objects.filter(email=email).exists():
+            return Response(request.data,
+                            status=status.HTTP_200_OK)
+        user = User.objects.create_user(username, email)
         confirmation_code = default_token_generator.make_token(user)
         user.confirmation_code = confirmation_code
         user.save()
