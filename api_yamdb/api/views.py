@@ -179,7 +179,6 @@ class WithTitleViewSet(viewsets.ModelViewSet):
 
 class ReviewsViewSet(WithTitleViewSet):
     """Работа с отзывами."""
-    queryset = Review.objects.all()
     serializer_class = ReviewSerializer
 
     def perform_create(self, serializer):
