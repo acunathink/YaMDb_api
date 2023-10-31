@@ -197,7 +197,6 @@ class ReviewsViewSet(WithTitleViewSet):
 
 
 class CommentViewSet(WithTitleViewSet):
-    queryset = Comment.objects.order_by('id')
     serializer_class = CommentSerializer
 
     def get_review(self):
