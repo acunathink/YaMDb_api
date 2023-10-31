@@ -1,5 +1,6 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from django.conf import settings
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 
@@ -65,7 +66,7 @@ class RegistrationView(APIView):
             message=f'Вы сделали запрос на регистрацию на портале YaMDb.\n\n'
                     f'Ваш логин: {user.username} \n'
                     f'Ваш код подтверждения: {confirmation_code}',
-            from_email='robot@yamdb.pro',
+            from_email=settings.EMAIL,
             recipient_list=[user.email],
             fail_silently=True,
         )
