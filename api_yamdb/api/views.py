@@ -100,7 +100,7 @@ class TokenView(APIView):
 class UsersViewSet(viewsets.ModelViewSet):
     """Работа с полями Пользователей."""
     serializer_class = UserSerializer
-    queryset = User.objects.order_by('id')
+    queryset = User.objects.all()
     lookup_field = 'username'
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
@@ -131,21 +131,21 @@ class UsersViewSet(viewsets.ModelViewSet):
 
 class CategoriesViewSet(CategoriesGenresBaseMixin):
     """Работа с Категориями."""
-    queryset = Category.objects.order_by('id')
+    queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnlyPermission,)
 
 
 class GenresViewSet(CategoriesGenresBaseMixin):
     """Работа с Жанрами."""
-    queryset = Genre.objects.order_by('id')
+    queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnlyPermission,)
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
     """Работа с Произведениями."""
-    queryset = Title.objects.all().order_by('id')
+    queryset = Title.objects.all()
     serializer_class = TitlesSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
@@ -169,6 +169,7 @@ class TitlesViewSet(viewsets.ModelViewSet):
 
 class WithTitleViewSet(viewsets.ModelViewSet):
     permission_classes = (AuthorOrModerPermission,)
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_title(self):
         title_id = self.kwargs.get('title_id')
@@ -177,7 +178,7 @@ class WithTitleViewSet(viewsets.ModelViewSet):
 
 
 class ReviewsViewSet(WithTitleViewSet):
-    """Работа с отзывами."""
+    """Работа с Отзывами."""
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
 
@@ -193,11 +194,12 @@ class ReviewsViewSet(WithTitleViewSet):
             )
 
     def get_queryset(self):
-        return self.get_title().reviews.all().order_by('id')
+        return self.get_title().reviews.all()
 
 
 class CommentViewSet(WithTitleViewSet):
-    queryset = Comment.objects.order_by('id')
+    """Работа с Комментариями."""
+    queryset = Comment.objects
     serializer_class = CommentSerializer
 
     def get_review(self):
@@ -206,7 +208,7 @@ class CommentViewSet(WithTitleViewSet):
         return review
 
     def get_queryset(self):
-        return self.get_review().comments.order_by('id')
+        return self.get_review().comments.all()
 
     def perform_create(self, serializer):
         serializer.save(
