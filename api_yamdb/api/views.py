@@ -1,5 +1,6 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from django.conf import settings
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 
@@ -47,15 +48,32 @@ class RegistrationView(APIView):
     def post(self, request):
         serializer = RegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        try:
-            user, created = User.objects.get_or_create(
-                **serializer.validated_data
-            )
-        except IntegrityError:
+
+        username = serializer.validated_data.get('username')
+        email = serializer.validated_data.get('email')
+        existing_user = User.objects.filter(username=username).first()
+
+        if existing_user and existing_user.email != email:
             return Response(
-                'username или email уже заняты',
+                f'Указан не верный email для {existing_user}!',
                 status=status.HTTP_400_BAD_REQUEST
             )
+        if User.objects.filter(username=username).exists():
+            return Response(
+                request.data,
+                status=status.HTTP_200_OK
+            )
+        if existing_user is None and User.objects.filter(email=email).exists():
+            return Response(
+                f'Пользователь с почтой {email} уже зарегистрирован!',
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if User.objects.filter(email=email).exists():
+            return Response(
+                request.data,
+                status=status.HTTP_200_OK
+            )
+        user = User.objects.create_user(username, email)
         confirmation_code = default_token_generator.make_token(user)
         user.confirmation_code = confirmation_code
         user.save()
@@ -65,7 +83,7 @@ class RegistrationView(APIView):
             message=f'Вы сделали запрос на регистрацию на портале YaMDb.\n\n'
                     f'Ваш логин: {user.username} \n'
                     f'Ваш код подтверждения: {confirmation_code}',
-            from_email='robot@yamdb.pro',
+            from_email=settings.EMAIL,
             recipient_list=[user.email],
             fail_silently=True,
         )
