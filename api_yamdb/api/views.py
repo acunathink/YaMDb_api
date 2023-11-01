@@ -130,21 +130,21 @@ class UsersViewSet(viewsets.ModelViewSet):
 
 class CategoriesViewSet(CategoriesGenresBaseMixin):
     """Работа с Категориями."""
-    queryset = Category.objects.all()
+    queryset = Category.objects.order_by('id')
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnlyPermission,)
 
 
 class GenresViewSet(CategoriesGenresBaseMixin):
     """Работа с Жанрами."""
-    queryset = Genre.objects.all()
+    queryset = Genre.objects.order_by('id')
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnlyPermission,)
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
     """Работа с Произведениями."""
-    queryset = Title.objects.all()
+    queryset = Title.objects.order_by('id')
     serializer_class = TitlesSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
@@ -187,7 +187,7 @@ class ReviewsViewSet(WithTitleViewSet):
         )
 
     def get_queryset(self):
-        return self.get_title().reviews.all()
+        return self.get_title().reviews.order_by('id')
 
 
 class CommentViewSet(WithTitleViewSet):
@@ -200,7 +200,7 @@ class CommentViewSet(WithTitleViewSet):
         return review
 
     def get_queryset(self):
-        return self.get_review().comments.all()
+        return self.get_review().comments.order_by('id')
 
     def perform_create(self, serializer):
         serializer.save(
