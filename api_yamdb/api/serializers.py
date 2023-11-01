@@ -1,6 +1,5 @@
-from django.shortcuts import get_object_or_404
-
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
 from reviews.models import Category, Comment, Genre, Review, Title, User
 
@@ -69,13 +68,20 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
 
+class TitleIdDefault:
+    requires_context = True
+
+    def __call__(self, serializer_field):
+        return serializer_field.context.get('view').get_title().id
+
+
 class ReviewSerializer(serializers.ModelSerializer):
     """Serializer для работы с Отзывами."""
     author = serializers.CharField(
-        source='author.username',
         read_only=True,
         default=serializers.CurrentUserDefault()
     )
+    title_id = serializers.HiddenField(default=TitleIdDefault())
 
     class Meta:
         model = Review
@@ -84,8 +90,18 @@ class ReviewSerializer(serializers.ModelSerializer):
             'text',
             'author',
             'score',
-            'pub_date'
+            'pub_date',
+            'title_id'
         )
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Review.objects.all(),
+                fields=['author', 'title_id'],
+                message=(
+                    'Cоздать другой отзыв на одно и то же произведение нельзя.'
+                )
+            )
+        ]
 
 
 class CategorySerializer(serializers.ModelSerializer):

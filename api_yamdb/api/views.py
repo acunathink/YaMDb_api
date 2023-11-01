@@ -6,13 +6,12 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.filters import TitleFilter
-from reviews.models import Category, Comment, Genre, Review, Title, User
+from reviews.models import Category, Genre, Review, Title, User
 
 from .permissions import (
     AuthorOrModerPermission, IsAdminOrReadOnlyPermission, IsAdminPermission
@@ -182,15 +181,10 @@ class ReviewsViewSet(WithTitleViewSet):
     serializer_class = ReviewSerializer
 
     def perform_create(self, serializer):
-        try:
-            serializer.save(
-                author=self.request.user,
-                title=self.get_title()
-            )
-        except IntegrityError:
-            raise ValidationError(
-                'Cоздать другой отзыв на одно и то же произведение нельзя.'
-            )
+        serializer.save(
+            author=self.request.user,
+            title=self.get_title()
+        )
 
     def get_queryset(self):
         return self.get_title().reviews.all()
