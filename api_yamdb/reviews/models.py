@@ -2,18 +2,9 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+from .constants import ROLE_CHOICES, BASE_LENGTH, BASE_EMAIL_LENGTH, DEFAULT_STR_LENGTH
 from .managers import TitleManager
 from .validators import validate_year
-
-ROLE_CHOICES = [
-    ('user', 'Пользователь'),
-    ('moderator', 'Модератор'),
-    ('admin', 'Админ')
-]
-
-BASE_LENGTH = 256
-BASE_EMAIL_LENGTH = 254
-DEFAULT_STR_LENGTH = 25
 
 
 class BaseModel(models.Model):
