@@ -177,7 +177,7 @@ class WithTitleViewSet(viewsets.ModelViewSet):
 
 
 class ReviewsViewSet(WithTitleViewSet):
-    """Работа с отзывами."""
+    """Работа с Отзывами."""
     serializer_class = ReviewSerializer
 
     def perform_create(self, serializer):
@@ -191,6 +191,7 @@ class ReviewsViewSet(WithTitleViewSet):
 
 
 class CommentViewSet(WithTitleViewSet):
+    """Работа с Комментариями."""
     serializer_class = CommentSerializer
 
     def get_review(self):
