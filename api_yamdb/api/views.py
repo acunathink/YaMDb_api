@@ -205,7 +205,7 @@ class ReviewsViewSet(WithTitleViewSet):
         )
 
     def get_queryset(self):
-        return self.get_title().reviews.order_by('id')
+        return self.get_title().reviews.all()
 
 
 class CommentViewSet(WithTitleViewSet):
@@ -218,7 +218,7 @@ class CommentViewSet(WithTitleViewSet):
         return review
 
     def get_queryset(self):
-        return self.get_review().comments.order_by('id')
+        return self.get_review().comments.all()
 
     def perform_create(self, serializer):
         serializer.save(
