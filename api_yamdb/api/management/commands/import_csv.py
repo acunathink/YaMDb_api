@@ -19,7 +19,7 @@ class Command(BaseCommand):
     help = 'Command for import csv files'
 
     def add_arguments(self, parser):
-        parser.add_argument("csv_path", type=str)
+        parser.add_argument('csv_path', type=str, nargs='?', default='static/data')
 
     def handle(self, *args, **options):
         csv_path = options['csv_path']
