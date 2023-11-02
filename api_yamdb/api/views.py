@@ -2,26 +2,33 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
+
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
-from reviews.models import User, Category, Genre, Title, Review, Comment
-from .permissions import IsAdminPermission, AuthorOrReadOnly
-from .serializers import (
-    CategorySerializer, CommentSerializer, GenreSerializer, ReviewSerializer,
-    RegistrationSerializer, TitlesSerializer, TokenSerializer, UserSerializer
+from reviews.filters import TitleFilter
+from reviews.models import Category, Comment, Genre, Review, Title, User
+
+from .permissions import (
+    AuthorOrModerPermission, IsAdminOrReadOnlyPermission, IsAdminPermission
 )
-from .permissions import IsAdminPermission
+from .serializers import (
+    CategorySerializer, CommentSerializer, GenreSerializer,
+    RegistrationSerializer, ReviewSerializer, TitlesSerializer,
+    TokenSerializer, UserSerializer
+)
 
 
 class CategoriesGenresBaseMixin(
-    mixins.ListModelMixin, mixins.CreateModelMixin,
-    mixins.DestroyModelMixin, viewsets.GenericViewSet
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet
 ):
     """Миксин для Жанров и Категорий.
 
@@ -37,12 +44,13 @@ class RegistrationView(APIView):
     serializer_class = RegistrationSerializer
     queryset = User.objects.all()
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         serializer = RegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
             user, created = User.objects.get_or_create(
-                **serializer.validated_data)
+                **serializer.validated_data
+            )
         except IntegrityError:
             return Response(
                 'username или email уже заняты',
@@ -61,7 +69,10 @@ class RegistrationView(APIView):
             recipient_list=[user.email],
             fail_silently=True,
         )
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )
 
 
 class TokenView(APIView):
@@ -80,7 +91,10 @@ class TokenView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         token = AccessToken.for_user(user)
-        return Response({'token': str(token)}, status=status.HTTP_200_OK)
+        return Response(
+            {'token': str(token)},
+            status=status.HTTP_200_OK
+        )
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -93,8 +107,12 @@ class UsersViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminPermission,)
     http_method_names = ['get', 'post', 'patch', 'delete']
 
-    @action(methods=['GET', 'PATCH'], url_path='me', detail=False,
-            permission_classes=(permissions.IsAuthenticated,))
+    @action(
+        methods=['GET', 'PATCH'],
+        url_path='me',
+        detail=False,
+        permission_classes=(permissions.IsAuthenticated,)
+    )
     def get_about_me(self, request):
         serializer = UserSerializer(
             request.user,
@@ -105,19 +123,24 @@ class UsersViewSet(viewsets.ModelViewSet):
         if self.request.method == 'PATCH':
             serializer.validated_data.pop('role', None)
             serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )
 
 
 class CategoriesViewSet(CategoriesGenresBaseMixin):
     """Работа с Категориями."""
-    queryset = Category.objects.all()
+    queryset = Category.objects.order_by('id')
     serializer_class = CategorySerializer
+    permission_classes = (IsAdminOrReadOnlyPermission,)
 
 
 class GenresViewSet(CategoriesGenresBaseMixin):
     """Работа с Жанрами."""
-    queryset = Genre.objects.all()
+    queryset = Genre.objects.order_by('id')
     serializer_class = GenreSerializer
+    permission_classes = (IsAdminOrReadOnlyPermission,)
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
@@ -125,14 +148,18 @@ class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all().order_by('id')
     serializer_class = TitlesSerializer
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('genre__slug',)
+    filterset_class = TitleFilter
+    permission_classes = (IsAdminOrReadOnlyPermission,)
 
     def update(self, request, *args, **kwargs):
         if self.action == 'update':
-            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+            return Response(
+                status=status.HTTP_405_METHOD_NOT_ALLOWED
+            )
         instance = self.get_object()
         serializer = self.get_serializer(
-            instance, data=request.data,
+            instance,
+            data=request.data,
             partial=True
         )
         serializer.is_valid(raise_exception=True)
@@ -141,7 +168,8 @@ class TitlesViewSet(viewsets.ModelViewSet):
 
 
 class WithTitleViewSet(viewsets.ModelViewSet):
-    permission_classes = (AuthorOrReadOnly,)
+    permission_classes = (AuthorOrModerPermission,)
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_title(self):
         title_id = self.kwargs.get('title_id')
@@ -157,7 +185,8 @@ class ReviewsViewSet(WithTitleViewSet):
     def perform_create(self, serializer):
         try:
             serializer.save(
-                author=self.request.user, title=self.get_title()
+                author=self.request.user,
+                title=self.get_title()
             )
         except IntegrityError:
             raise ValidationError(
@@ -169,7 +198,7 @@ class ReviewsViewSet(WithTitleViewSet):
 
 
 class CommentViewSet(WithTitleViewSet):
-    queryset = Comment.objects.all()
+    queryset = Comment.objects.order_by('id')
     serializer_class = CommentSerializer
 
     def get_review(self):
@@ -178,7 +207,7 @@ class CommentViewSet(WithTitleViewSet):
         return review
 
     def get_queryset(self):
-        return self.get_review().comments.all()
+        return self.get_review().comments.order_by('id')
 
     def perform_create(self, serializer):
         serializer.save(
