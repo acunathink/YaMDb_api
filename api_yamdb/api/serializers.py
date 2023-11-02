@@ -72,7 +72,8 @@ class TitleIdDefault:
     requires_context = True
 
     def __call__(self, serializer_field):
-        return serializer_field.context.get('view').get_title().id
+        view = serializer_field.context.get('view')
+        return view.kwargs.get('title_id')
 
 
 class ReviewSerializer(serializers.ModelSerializer):
