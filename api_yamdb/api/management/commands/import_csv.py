@@ -24,7 +24,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        csv_path = options['csv_path']
+        count = 0
         for model, file in CSV.items():
             with open(f'{csv_path}/{file}', encoding='utf-8') as csv_file:
                 reader = csv.DictReader(csv_file)
@@ -34,9 +34,10 @@ class Command(BaseCommand):
                         f'данные уже добавлены!')
                     )
                     continue
-                model.objects.bulk_create(
+                created_objects = model.objects.bulk_create(
                     model(**data) for data in reader
                 )
+                count += len(created_objects)
 
         with open('static/data/genre_title.csv', encoding='utf-8') as gt:
             reader = csv.DictReader(gt)
@@ -44,5 +45,5 @@ class Command(BaseCommand):
                 title = Title.objects.get(id=row['title_id'])
                 genre = Genre.objects.get(id=row['genre_id'])
                 title.genre.add(genre)
-
-        self.stdout.write(self.style.SUCCESS('Все данные импортированы'))
+                count += 1
+        self.stdout.write(self.style.SUCCESS(f'Добавлено записей - {count}'))
