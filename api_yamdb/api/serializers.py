@@ -76,6 +76,7 @@ class TitleIdDefault:
 
 class ReviewSerializer(serializers.ModelSerializer):
     """Serializer для работы с Отзывами."""
+    title_id = serializers.HiddenField(default=TitleIdDefault())
     author = serializers.CharField(
         read_only=True,
         default=serializers.CurrentUserDefault()
@@ -89,8 +90,8 @@ class ReviewSerializer(serializers.ModelSerializer):
             'text',
             'author',
             'score',
-            'pub_date',
-            'title_id'
+            'title_id',
+            'pub_date'
         )
         validators = [
             UniqueTogetherValidator(
