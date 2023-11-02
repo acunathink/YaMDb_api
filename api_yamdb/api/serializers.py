@@ -5,14 +5,17 @@ from rest_framework import serializers
 from reviews.models import Category, Comment, Genre, Review, Title, User
 
 
-class RegistrationSerializer(serializers.Serializer):
-    """Serializer для регистрации Пользователей."""
+class BaseRegistrationSerializer(serializers.Serializer):
+    """BaseSerializer для регистрации Пользователей и получения Токенов."""
     username = serializers.RegexField(
         regex=r'^[\w.@+-]+$',
         max_length=150,
         required=True
     )
 
+
+class RegistrationSerializer(BaseRegistrationSerializer):
+    """Serializer для регистрации Пользователей."""
     email = serializers.EmailField(
         max_length=254,
         required=True,
@@ -38,13 +41,8 @@ class RegistrationSerializer(serializers.Serializer):
         return value
 
 
-class TokenSerializer(serializers.Serializer):
+class TokenSerializer(BaseRegistrationSerializer):
     """Serializer для работы с Токеном."""
-    username = serializers.RegexField(
-        regex=r'^[\w.@+-]+$',
-        max_length=150,
-        required=True
-    )
     confirmation_code = serializers.CharField(required=True)
 
     class Meta:
