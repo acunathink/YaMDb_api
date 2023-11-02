@@ -25,6 +25,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         count = 0
+        csv_path = options['csv_path']
         for model, file in CSV.items():
             with open(f'{csv_path}/{file}', encoding='utf-8') as csv_file:
                 reader = csv.DictReader(csv_file)
