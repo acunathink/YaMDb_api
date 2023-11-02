@@ -14,11 +14,11 @@ v1_router.register('genres', GenresViewSet)
 v1_router.register('titles', TitlesViewSet)
 v1_router.register(
     r'titles/(?P<title_id>[\d]+)/reviews',
-    ReviewsViewSet
+    ReviewsViewSet, basename='reviews'
 )
 v1_router.register(
     r'titles/(?P<title_id>[\d]+)/reviews/(?P<review_id>[\w]+)/comments',
-    CommentViewSet
+    CommentViewSet, basename='comments'
 )
 
 urlpatterns_auth = [

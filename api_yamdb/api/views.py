@@ -7,13 +7,12 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.filters import TitleFilter
-from reviews.models import Category, Comment, Genre, Review, Title, User
+from reviews.models import Category, Genre, Review, Title, User
 
 from .permissions import (
     AuthorOrModerPermission, IsAdminOrReadOnlyPermission, IsAdminPermission
@@ -149,21 +148,21 @@ class UsersViewSet(viewsets.ModelViewSet):
 
 class CategoriesViewSet(CategoriesGenresBaseMixin):
     """Работа с Категориями."""
-    queryset = Category.objects.all()
+    queryset = Category.objects.order_by('id')
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnlyPermission,)
 
 
 class GenresViewSet(CategoriesGenresBaseMixin):
     """Работа с Жанрами."""
-    queryset = Genre.objects.all()
+    queryset = Genre.objects.order_by('id')
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnlyPermission,)
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
     """Работа с Произведениями."""
-    queryset = Title.objects.all()
+    queryset = Title.objects.order_by('id')
     serializer_class = TitlesSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
@@ -197,27 +196,20 @@ class WithTitleViewSet(viewsets.ModelViewSet):
 
 class ReviewsViewSet(WithTitleViewSet):
     """Работа с Отзывами."""
-    queryset = Review.objects.all()
     serializer_class = ReviewSerializer
 
     def perform_create(self, serializer):
-        try:
-            serializer.save(
-                author=self.request.user,
-                title=self.get_title()
-            )
-        except IntegrityError:
-            raise ValidationError(
-                'Cоздать другой отзыв на одно и то же произведение нельзя.'
-            )
+        serializer.save(
+            author=self.request.user,
+            title=self.get_title()
+        )
 
     def get_queryset(self):
-        return self.get_title().reviews.all()
+        return self.get_title().reviews.order_by('id')
 
 
 class CommentViewSet(WithTitleViewSet):
     """Работа с Комментариями."""
-    queryset = Comment.objects
     serializer_class = CommentSerializer
 
     def get_review(self):
@@ -226,7 +218,7 @@ class CommentViewSet(WithTitleViewSet):
         return review
 
     def get_queryset(self):
-        return self.get_review().comments.all()
+        return self.get_review().comments.order_by('id')
 
     def perform_create(self, serializer):
         serializer.save(
