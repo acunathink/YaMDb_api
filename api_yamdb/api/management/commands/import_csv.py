@@ -18,9 +18,13 @@ class Command(BaseCommand):
     """Импорт csv-файлов."""
     help = 'Command for import csv files'
 
+    def add_arguments(self, parser):
+        parser.add_argument("csv_path", type=str)
+
     def handle(self, *args, **options):
+        csv_path = options['csv_path']
         for model, file in CSV.items():
-            with open(f'static/data/{file}', encoding='utf-8') as csv_file:
+            with open(f'{csv_path}/{file}', encoding='utf-8') as csv_file:
                 reader = csv.DictReader(csv_file)
                 if model.objects.exists():
                     self.stdout.write(self.style.WARNING(
