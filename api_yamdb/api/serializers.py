@@ -1,18 +1,20 @@
-from django.shortcuts import get_object_or_404
-
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
 from reviews.models import Category, Comment, Genre, Review, Title, User
 
 
-class RegistrationSerializer(serializers.Serializer):
-    """Serializer для регистрации Пользователей."""
+class BaseRegistrationSerializer(serializers.Serializer):
+    """BaseSerializer для регистрации Пользователей и получения Токенов."""
     username = serializers.RegexField(
         regex=r'^[\w.@+-]+$',
         max_length=150,
         required=True
     )
 
+
+class RegistrationSerializer(BaseRegistrationSerializer):
+    """Serializer для регистрации Пользователей."""
     email = serializers.EmailField(
         max_length=254,
         required=True,
@@ -38,13 +40,8 @@ class RegistrationSerializer(serializers.Serializer):
         return value
 
 
-class TokenSerializer(serializers.Serializer):
+class TokenSerializer(BaseRegistrationSerializer):
     """Serializer для работы с Токеном."""
-    username = serializers.RegexField(
-        regex=r'^[\w.@+-]+$',
-        max_length=150,
-        required=True
-    )
     confirmation_code = serializers.CharField(required=True)
 
     class Meta:
@@ -69,13 +66,22 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
 
+class TitleIdDefault:
+    requires_context = True
+
+    def __call__(self, serializer_field):
+        view = serializer_field.context.get('view')
+        return view.kwargs.get('title_id')
+
+
 class ReviewSerializer(serializers.ModelSerializer):
     """Serializer для работы с Отзывами."""
+    title_id = serializers.HiddenField(default=TitleIdDefault())
     author = serializers.CharField(
-        source='author.username',
         read_only=True,
         default=serializers.CurrentUserDefault()
     )
+    title_id = serializers.HiddenField(default=TitleIdDefault())
 
     class Meta:
         model = Review
@@ -84,8 +90,18 @@ class ReviewSerializer(serializers.ModelSerializer):
             'text',
             'author',
             'score',
+            'title_id',
             'pub_date'
         )
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Review.objects.all(),
+                fields=['author', 'title_id'],
+                message=(
+                    'Cоздать другой отзыв на одно и то же произведение нельзя.'
+                )
+            )
+        ]
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -107,6 +123,24 @@ class GenreSerializer(serializers.ModelSerializer):
         fields = (
             'name',
             'slug'
+        )
+
+
+class TitlesRetrieveSerializer(serializers.ModelSerializer):
+    genre = GenreSerializer(many=True, read_only=True)
+    category = CategorySerializer(read_only=True)
+    rating = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Title
+        fields = (
+            'id',
+            'name',
+            'year',
+            'rating',
+            'description',
+            'genre',
+            'category'
         )
 
 
@@ -136,18 +170,8 @@ class TitlesSerializer(serializers.ModelSerializer):
         )
 
     def to_representation(self, instance):
-        data = super().to_representation(instance)
-
-        category = get_object_or_404(Category, slug=data.get('category'))
-        data['category'] = CategorySerializer(category).data
-
-        genre_slugs = data.get('genre')
-        genres = [
-            get_object_or_404(Genre, slug=slug) for slug in genre_slugs
-        ]
-        data['genre'] = GenreSerializer(genres, many=True).data
-
-        return data
+        serializer = TitlesRetrieveSerializer(instance)
+        return serializer.data
 
 
 class CommentSerializer(serializers.ModelSerializer):

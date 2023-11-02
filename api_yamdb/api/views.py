@@ -1,18 +1,18 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from django.conf import settings
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.filters import TitleFilter
-from reviews.models import Category, Comment, Genre, Review, Title, User
+from reviews.models import Category, Genre, Review, Title, User
 
 from .permissions import (
     AuthorOrModerPermission, IsAdminOrReadOnlyPermission, IsAdminPermission
@@ -47,15 +47,32 @@ class RegistrationView(APIView):
     def post(self, request):
         serializer = RegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        try:
-            user, created = User.objects.get_or_create(
-                **serializer.validated_data
-            )
-        except IntegrityError:
+
+        username = serializer.validated_data.get('username')
+        email = serializer.validated_data.get('email')
+        existing_user = User.objects.filter(username=username).first()
+
+        if existing_user and existing_user.email != email:
             return Response(
-                'username или email уже заняты',
+                f'Указан не верный email для {existing_user}!',
                 status=status.HTTP_400_BAD_REQUEST
             )
+        if User.objects.filter(username=username).exists():
+            return Response(
+                request.data,
+                status=status.HTTP_200_OK
+            )
+        if existing_user is None and User.objects.filter(email=email).exists():
+            return Response(
+                f'Пользователь с почтой {email} уже зарегистрирован!',
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if User.objects.filter(email=email).exists():
+            return Response(
+                request.data,
+                status=status.HTTP_200_OK
+            )
+        user = User.objects.create_user(username, email)
         confirmation_code = default_token_generator.make_token(user)
         user.confirmation_code = confirmation_code
         user.save()
@@ -65,7 +82,7 @@ class RegistrationView(APIView):
             message=f'Вы сделали запрос на регистрацию на портале YaMDb.\n\n'
                     f'Ваш логин: {user.username} \n'
                     f'Ваш код подтверждения: {confirmation_code}',
-            from_email='robot@yamdb.pro',
+            from_email=settings.EMAIL,
             recipient_list=[user.email],
             fail_silently=True,
         )
@@ -100,7 +117,7 @@ class TokenView(APIView):
 class UsersViewSet(viewsets.ModelViewSet):
     """Работа с полями Пользователей."""
     serializer_class = UserSerializer
-    queryset = User.objects.order_by('id')
+    queryset = User.objects.all()
     lookup_field = 'username'
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
@@ -145,7 +162,7 @@ class GenresViewSet(CategoriesGenresBaseMixin):
 
 class TitlesViewSet(viewsets.ModelViewSet):
     """Работа с Произведениями."""
-    queryset = Title.objects.all().order_by('id')
+    queryset = Title.objects.order_by('id')
     serializer_class = TitlesSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
@@ -178,27 +195,21 @@ class WithTitleViewSet(viewsets.ModelViewSet):
 
 
 class ReviewsViewSet(WithTitleViewSet):
-    """Работа с отзывами."""
-    queryset = Review.objects.all()
+    """Работа с Отзывами."""
     serializer_class = ReviewSerializer
 
     def perform_create(self, serializer):
-        try:
-            serializer.save(
-                author=self.request.user,
-                title=self.get_title()
-            )
-        except IntegrityError:
-            raise ValidationError(
-                'Cоздать другой отзыв на одно и то же произведение нельзя.'
-            )
+        serializer.save(
+            author=self.request.user,
+            title=self.get_title()
+        )
 
     def get_queryset(self):
-        return self.get_title().reviews.all().order_by('id')
+        return self.get_title().reviews.order_by('id')
 
 
 class CommentViewSet(WithTitleViewSet):
-    queryset = Comment.objects.order_by('id')
+    """Работа с Комментариями."""
     serializer_class = CommentSerializer
 
     def get_review(self):
