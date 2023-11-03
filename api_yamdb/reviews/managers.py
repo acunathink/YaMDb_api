@@ -5,4 +5,4 @@ class TitleManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().annotate(
             rating=models.Avg('reviews__score')
-        )
+        ).order_by('id')

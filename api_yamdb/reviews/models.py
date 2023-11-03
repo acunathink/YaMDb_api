@@ -63,14 +63,14 @@ class User(AbstractUser):
 
 class Category(BaseModel):
 
-    class Meta:
+    class Meta(BaseModel.Meta):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
 
 class Genre(BaseModel):
 
-    class Meta:
+    class Meta(BaseModel.Meta):
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
